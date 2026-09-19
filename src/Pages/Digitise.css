@@ -983,3 +983,264 @@
         text-align: center;
     }
 }
+
+
+/* =========================================================
+   LIVE CAMERA MODE
+========================================================= */
+
+.live-camera-wrapper {
+  width: min(920px, 92%);
+  margin: 32px auto 60px;
+}
+
+.live-camera-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.live-camera-label {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #55789f;
+}
+
+.live-camera-header h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  color: #071b38;
+}
+
+.live-camera-header p {
+  margin: 0;
+  color: #61748d;
+  font-size: 15px;
+}
+
+.live-camera-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: #f1f6fb;
+  color: #42688f;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.live-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4f8b68;
+  display: inline-block;
+}
+
+.live-camera-preview {
+  width: 100%;
+  min-height: 480px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #101820;
+  border: 1px solid #dce5ee;
+  position: relative;
+}
+
+.live-camera-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 480px;
+  object-fit: cover;
+}
+
+.live-camera-placeholder {
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #c4d0dc;
+  text-align: center;
+}
+
+.live-camera-placeholder h3 {
+  margin: 14px 0 6px;
+  color: #e3ebf3;
+}
+
+.live-camera-placeholder p {
+  margin: 0;
+  color: #aebdcb;
+}
+
+.live-camera-controls {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.live-camera-info {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #50677f;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.live-stop-btn {
+  border: 1px solid #d5dee8;
+  background: #ffffff;
+  color: #48627d;
+  padding: 10px 18px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.live-stop-btn:hover {
+  background: #f4f7fa;
+}
+
+.live-camera-tip {
+  margin: 14px 0 0;
+  text-align: center;
+  color: #7b8da2;
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .live-camera-header {
+    flex-direction: column;
+  }
+
+  .live-camera-preview,
+  .live-camera-video,
+  .live-camera-placeholder {
+    min-height: 360px;
+  }
+
+  .live-camera-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .live-stop-btn {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   LIVE CAMERA CAPTURE
+========================================================= */
+
+.live-capture-btn {
+  border: none;
+  background: #315f8c;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.live-capture-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.live-capture-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.live-capture-result {
+  margin-top: 28px;
+  padding: 22px;
+  border: 1px solid #dce5ee;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.live-capture-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.live-capture-label {
+  margin: 0 0 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #55789f;
+}
+
+.live-capture-result-header h3 {
+  margin: 0;
+  font-size: 19px;
+  color: #071b38;
+}
+
+.capture-success-badge {
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #eef7f1;
+  color: #4f8063;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.live-capture-image-wrapper {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f5f7fa;
+  border: 1px solid #e1e7ee;
+}
+
+.live-capture-image {
+  display: block;
+  width: 100%;
+  max-height: 600px;
+  object-fit: contain;
+}
+
+
+.live-tap-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.tap-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  display: inline-block;
+}

@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
 
 import Navbar from "./Pages/Navbar";
 import Home from "./Pages/Home";
@@ -7,51 +12,122 @@ import Digitise from "./Pages/Digitise";
 import Documents from "./Pages/Documents";
 import DocumentViewer from "./Pages/DocumentViewer";
 import About from "./Pages/About";
+import Login from "./Pages/Login";
+
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 
 import "./App.css";
 
 function App() {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] =
+    useState("");
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/test")
-      .then((response) => response.json())
+    fetch(
+      "http://127.0.0.1:8000/api/test"
+    )
+      .then((response) =>
+        response.json()
+      )
       .then((data) => {
-        setMessage(data.message);
+        setMessage(
+          data.message
+        );
       })
       .catch((error) => {
-        console.error("Backend connection error:", error);
+        console.error(
+          "Backend connection error:",
+          error
+        );
       });
   }, []);
 
   return (
-    <BrowserRouter>
+    <AuthProvider>
 
-      <Navbar />
+      <BrowserRouter>
 
-      <Routes>
+        <Routes>
 
-        <Route path="/" element={<Home />} />
+          {/* =================================================
+              PUBLIC ROUTE
+          ================================================= */}
 
-        <Route path="/digitise" element={<Digitise />} />
+          <Route
+            path="/login"
+            element={<Login />}
+          />
 
-        <Route path="/documents" element={<Documents />} />
+          {/* =================================================
+              PROTECTED APPLICATION
+          ================================================= */}
 
-        <Route
-          path="/document/:id"
-          element={<DocumentViewer />}
-        />
+          <Route element={<ProtectedRoute />}>
 
-        <Route path="/about" element={<About />} />
+            <Route
+              path="/"
+              element={
+                <>
+                  <Navbar />
+                  <Home />
+                </>
+              }
+            />
 
-      </Routes>
+            <Route
+              path="/digitise"
+              element={
+                <>
+                  <Navbar />
+                  <Digitise />
+                </>
+              }
+            />
 
-      {/* Temporary Backend Connection Test */}
-      <div className="backend-test">
-        <p>{message}</p>
-      </div>
+            <Route
+              path="/documents"
+              element={
+                <>
+                  <Navbar />
+                  <Documents />
+                </>
+              }
+            />
 
-    </BrowserRouter>
+            <Route
+              path="/document/:id"
+              element={
+                <>
+                  <Navbar />
+                  <DocumentViewer />
+                </>
+              }
+            />
+
+            <Route
+              path="/about"
+              element={
+                <>
+                  <Navbar />
+                  <About />
+                </>
+              }
+            />
+
+          </Route>
+
+        </Routes>
+
+        {/* Temporary Backend Connection Test */}
+
+        <div className="backend-test">
+          <p>{message}</p>
+        </div>
+
+      </BrowserRouter>
+
+    </AuthProvider>
   );
 }
 
