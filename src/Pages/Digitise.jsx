@@ -83,6 +83,23 @@ function Digitise() {
   const streamRef = useRef(null);
 
   // =========================================================
+  // PHONE LIVE CAMERA / WEBRTC STATES
+  // =========================================================
+
+  const [liveSessionId, setLiveSessionId] = useState(null);
+  const [liveJoinCode, setLiveJoinCode] = useState("");
+  const [livePhoneUrl, setLivePhoneUrl] = useState("");
+  const [liveConnectionStatus, setLiveConnectionStatus] = useState(
+    "Preparing phone camera session..."
+  );
+  const [liveRemoteConnected, setLiveRemoteConnected] = useState(false);
+
+  const liveSocketRef = useRef(null);
+  const livePeerRef = useRef(null);
+  const livePendingIceRef = useRef([]);
+  const liveSessionIdRef = useRef(null);
+
+  // =========================================================
   // FIXED LIVE CAPTURE DETECTION STATES
   // =========================================================
 
@@ -213,19 +230,19 @@ function Digitise() {
   }, [activeTab]);
 
   // =========================================================
-  // Live camera effect
+  // Phone live camera session effect
   // =========================================================
 
   useEffect(() => {
-    if (activeTab === "live") {
-      startCamera();
+    if (activeTab !== "live") {
+      return;
     }
 
+    startLiveSession();
+
     return () => {
-      if (activeTab === "live") {
-        stopDoubleTapDetection();
-        stopCamera();
-      }
+      stopDoubleTapDetection();
+      stopLiveSession();
     };
   }, [activeTab]);
 
@@ -236,7 +253,7 @@ function Digitise() {
   useEffect(() => {
     if (
       activeTab === "live" &&
-      cameraActive
+      liveRemoteConnected
     ) {
       startDoubleTapDetection();
     } else {
@@ -246,7 +263,7 @@ function Digitise() {
     return () => {
       stopDoubleTapDetection();
     };
-  }, [activeTab, cameraActive]);
+  }, [activeTab, liveRemoteConnected]);
 
   // =========================================================
   // Open file picker
@@ -327,6 +344,307 @@ function Digitise() {
     setUploadError("");
     setDigitiseError("");
     setExtractedText("");
+  };
+
+  // =========================================================
+  // PHONE LIVE CAMERA / WEBRTC HOST
+  // =========================================================
+
+  const getLiveWebSocketUrl = (sessionId, token) => {
+    const apiUrl = new URL(API_URL);
+    const protocol =
+      apiUrl.protocol === "https:" ? "wss:" : "ws:";
+
+    return `${protocol}//${apiUrl.host}/ws/live/${sessionId}?role=host&token=${encodeURIComponent(token)}`;
+  };
+
+  const closeLivePeer = () => {
+    if (livePeerRef.current) {
+      livePeerRef.current.ontrack = null;
+      livePeerRef.current.onicecandidate = null;
+      livePeerRef.current.close();
+      livePeerRef.current = null;
+    }
+
+    livePendingIceRef.current = [];
+    setLiveRemoteConnected(false);
+
+    if (videoRef.current && activeTab === "live") {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  const createLiveHostPeer = async () => {
+    if (!liveSocketRef.current) {
+      return null;
+    }
+
+    if (livePeerRef.current) {
+      closeLivePeer();
+    }
+
+    const peer = new RTCPeerConnection({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+      ],
+    });
+
+    livePeerRef.current = peer;
+
+    peer.ontrack = (event) => {
+      const [remoteStream] = event.streams;
+
+      if (videoRef.current && remoteStream) {
+        videoRef.current.srcObject = remoteStream;
+        videoRef.current.play().catch(() => {});
+      }
+
+      setLiveRemoteConnected(true);
+      setLiveConnectionStatus(
+        "Phone camera connected — live stream active."
+      );
+    };
+
+    peer.onicecandidate = (event) => {
+      if (
+        event.candidate &&
+        liveSocketRef.current?.readyState === WebSocket.OPEN
+      ) {
+        liveSocketRef.current.send(
+          JSON.stringify({
+            type: "ice",
+            candidate: event.candidate,
+          })
+        );
+      }
+    };
+
+    peer.onconnectionstatechange = () => {
+      const state = peer.connectionState;
+
+      if (state === "connected") {
+        setLiveRemoteConnected(true);
+        setLiveConnectionStatus(
+          "Phone camera connected — live stream active."
+        );
+      }
+
+      if (["failed", "disconnected", "closed"].includes(state)) {
+        setLiveRemoteConnected(false);
+        setLiveConnectionStatus(
+          "Phone camera disconnected. Keep the phone page open and reconnect it."
+        );
+      }
+    };
+
+    return peer;
+  };
+
+  const handleLiveSignalingMessage = async (message) => {
+    if (message.type === "peer_joined") {
+      setLiveConnectionStatus(
+        "Phone connected. Establishing the live camera stream..."
+      );
+      return;
+    }
+
+    if (message.type === "offer") {
+      try {
+        const peer = await createLiveHostPeer();
+
+        if (!peer) {
+          throw new Error("Live WebRTC peer could not be created.");
+        }
+
+        await peer.setRemoteDescription(message.offer);
+
+        for (const candidate of livePendingIceRef.current) {
+          try {
+            await peer.addIceCandidate(candidate);
+          } catch (error) {
+            console.warn("Queued ICE candidate error:", error);
+          }
+        }
+        livePendingIceRef.current = [];
+
+        const answer = await peer.createAnswer();
+        await peer.setLocalDescription(answer);
+
+        if (liveSocketRef.current?.readyState === WebSocket.OPEN) {
+          liveSocketRef.current.send(
+            JSON.stringify({
+              type: "answer",
+              answer: peer.localDescription,
+            })
+          );
+        }
+
+        setLiveConnectionStatus("Connecting phone camera...");
+      } catch (error) {
+        console.error("Live WebRTC offer error:", error);
+        setLiveConnectionStatus(
+          "Unable to establish the phone camera stream."
+        );
+      }
+
+      return;
+    }
+
+    if (message.type === "ice" && message.candidate) {
+      if (
+        livePeerRef.current &&
+        livePeerRef.current.remoteDescription
+      ) {
+        try {
+          await livePeerRef.current.addIceCandidate(
+            message.candidate
+          );
+        } catch (error) {
+          console.warn("Live ICE candidate error:", error);
+        }
+      } else {
+        livePendingIceRef.current.push(message.candidate);
+      }
+
+      return;
+    }
+
+    if (message.type === "peer_left") {
+      closeLivePeer();
+      setLiveConnectionStatus(
+        "Phone disconnected. Open the phone camera link again to reconnect."
+      );
+    }
+  };
+
+  const startLiveSession = async () => {
+    if (!session?.access_token) {
+      setLiveConnectionStatus(
+        "You must be logged in to start Live Camera."
+      );
+      return;
+    }
+
+    setLiveConnectionStatus(
+      "Creating secure phone-camera session..."
+    );
+    setLiveRemoteConnected(false);
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/live/session`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      const responseText = await response.text();
+      let data;
+
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error(
+          "Backend returned an invalid live-session response."
+        );
+      }
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.error ||
+            data.detail ||
+            "Unable to create the phone-camera session."
+        );
+      }
+
+      setLiveSessionId(data.session_id);
+      liveSessionIdRef.current = data.session_id;
+      setLiveJoinCode(data.join_code);
+      setLivePhoneUrl(data.phone_url);
+
+      const socket = new WebSocket(
+        getLiveWebSocketUrl(
+          data.session_id,
+          session.access_token
+        )
+      );
+
+      liveSocketRef.current = socket;
+
+      socket.onopen = () => {
+        setLiveConnectionStatus(
+          "Session ready. Open the phone camera link to connect."
+        );
+      };
+
+      socket.onmessage = async (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          await handleLiveSignalingMessage(message);
+        } catch (error) {
+          console.error("Live signaling message error:", error);
+        }
+      };
+
+      socket.onerror = () => {
+        setLiveConnectionStatus(
+          "Unable to connect to the live-camera signaling service."
+        );
+      };
+
+      socket.onclose = () => {
+        setLiveConnectionStatus(
+          "Live-camera session disconnected."
+        );
+      };
+    } catch (error) {
+      console.error("Live session creation error:", error);
+      setLiveConnectionStatus(
+        error.message ||
+          "Unable to start the phone-camera session."
+      );
+    }
+  };
+
+  const stopLiveSession = async () => {
+    closeLivePeer();
+
+    if (liveSocketRef.current) {
+      liveSocketRef.current.close();
+      liveSocketRef.current = null;
+    }
+
+    const sessionIdToClose =
+      liveSessionIdRef.current || liveSessionId;
+
+    if (sessionIdToClose && session?.access_token) {
+      try {
+        await fetch(
+          `${API_URL}/api/live/session/${sessionIdToClose}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+      } catch (error) {
+        console.warn(
+          "Unable to close live session:",
+          error
+        );
+      }
+    }
+
+    setLiveSessionId(null);
+    liveSessionIdRef.current = null;
+    setLiveJoinCode("");
+    setLivePhoneUrl("");
+    setLiveRemoteConnected(false);
   };
 
   // =========================================================
@@ -656,7 +974,7 @@ function Digitise() {
 
     if (
       activeTab === "live" &&
-      cameraActive
+      liveRemoteConnected
     ) {
       startDoubleTapDetection();
     }
@@ -973,7 +1291,7 @@ function Digitise() {
       ) => {
         if (
           activeTab !== "live" ||
-          !cameraActive ||
+          !liveRemoteConnected ||
           !videoRef.current ||
           isLiveReviewingRef.current
         ) {
@@ -2160,13 +2478,65 @@ function Digitise() {
 
           </div>
 
+          {liveSessionId && (
+            <div className="live-session-panel">
+              <div className="live-session-panel-main">
+                <p className="live-session-label">PHONE CAMERA SESSION</p>
+                <h3>Connect your phone as the camera</h3>
+                <p>
+                  Open the link below on your phone. Keep this laptop page open.
+                </p>
+
+                <div className="live-session-code">
+                  <span>Session Code</span>
+                  <strong>{liveJoinCode}</strong>
+                </div>
+
+                <div className="live-session-link-row">
+                  <input
+                    type="text"
+                    value={livePhoneUrl}
+                    readOnly
+                    onFocus={(event) => event.target.select()}
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(livePhoneUrl);
+                        setLiveConnectionStatus(
+                          "Phone camera link copied. Open it on your phone."
+                        );
+                      } catch {
+                        setLiveConnectionStatus(
+                          "Copy failed. Select the link manually and open it on your phone."
+                        );
+                      }
+                    }}
+                  >
+                    Copy Link
+                  </button>
+                </div>
+
+                <a
+                  className="live-session-open-link"
+                  href={livePhoneUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open Phone Camera Page
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* =================================================
               Live camera preview
           ================================================= */}
 
           <div className="live-camera-preview">
 
-            {cameraActive ? (
+            {liveRemoteConnected ? (
               <>
 
                 <video
@@ -2202,11 +2572,11 @@ function Digitise() {
                 <Camera size={32} />
 
                 <h3>
-                  Starting camera...
+                  Waiting for phone camera
                 </h3>
 
                 <p>
-                  Please allow camera access.
+                  Open the phone camera link above to start the live stream.
                 </p>
 
               </div>
@@ -2301,9 +2671,9 @@ function Digitise() {
               <span className="live-status-dot"></span>
 
               <span>
-                {cameraActive
+                {liveRemoteConnected
                   ? tapDetectionStatus
-                  : "Camera is starting"}
+                  : liveConnectionStatus}
               </span>
 
             </div>
@@ -2315,7 +2685,7 @@ function Digitise() {
 
                 stopDoubleTapDetection();
 
-                stopCamera();
+                stopLiveSession();
 
                 setLiveCameraMode(false);
 
@@ -2343,13 +2713,12 @@ function Digitise() {
           <p className="live-camera-tip">
 
             <strong>
-              Fixed capture:
+              Pen capture:
             </strong>{" "}
-            Keep the pen inside the
-            highlighted capture zone and
-            make two quick short movements.
-            Movements outside the zone are
-            ignored.
+            Once the phone camera is connected, keep
+            the pen inside the highlighted capture
+            zone and make two quick short movements.
+            Movements outside the zone are ignored.
 
           </p>
 

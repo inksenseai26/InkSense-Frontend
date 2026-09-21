@@ -13,6 +13,7 @@ import Documents from "./Pages/Documents";
 import DocumentViewer from "./Pages/DocumentViewer";
 import About from "./Pages/About";
 import Login from "./Pages/Login";
+import LiveCameraPhone from "./Pages/LiveCameraPhone";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
@@ -25,7 +26,7 @@ function App() {
 
   useEffect(() => {
     fetch(
-      "https://inksense-backend-ifpd.onrender.com/api/test"
+      "http://127.0.0.1:8000/api/test"
     )
       .then((response) =>
         response.json()
@@ -57,6 +58,13 @@ function App() {
           <Route
             path="/login"
             element={<Login />}
+          />
+
+          {/* Phone camera does not require the laptop session UI.
+              The temporary session code protects access to the stream. */}
+          <Route
+            path="/live-camera-phone/:sessionId"
+            element={<LiveCameraPhone />}
           />
 
           {/* =================================================

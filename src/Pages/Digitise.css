@@ -1244,3 +1244,103 @@
   background: #22c55e;
   display: inline-block;
 }
+/* =========================================================
+   PHONE LIVE CAMERA SESSION
+========================================================= */
+
+.live-session-panel {
+  margin: 0 0 20px;
+  padding: 18px 20px;
+  border: 1px solid #d5e2f0;
+  border-radius: 14px;
+  background: #f7fafd;
+}
+
+.live-session-panel-main {
+  max-width: 900px;
+}
+
+.live-session-label {
+  margin: 0 0 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #55779a;
+}
+
+.live-session-panel h3 {
+  margin: 0 0 6px;
+  color: #284f73;
+}
+
+.live-session-panel p:not(.live-session-label) {
+  margin: 0 0 14px;
+  color: #687b8e;
+  line-height: 1.5;
+}
+
+.live-session-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 9px 13px;
+  border-radius: 9px;
+  background: #ffffff;
+  border: 1px solid #d5e2f0;
+}
+
+.live-session-code span {
+  color: #6d8092;
+  font-size: 12px;
+}
+
+.live-session-code strong {
+  color: #284f73;
+  font-size: 18px;
+  letter-spacing: 3px;
+}
+
+.live-session-link-row {
+  display: flex;
+  gap: 8px;
+}
+
+.live-session-link-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #d5e2f0;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #53697d;
+  font-size: 12px;
+}
+
+.live-session-link-row button,
+.live-session-open-link {
+  border: 1px solid #c8d7e6;
+  border-radius: 9px;
+  padding: 10px 13px;
+  background: #ffffff;
+  color: #365d85;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.live-session-open-link {
+  display: inline-block;
+  margin-top: 10px;
+}
+
+@media (max-width: 700px) {
+  .live-session-link-row {
+    flex-direction: column;
+  }
+
+  .live-session-link-row button {
+    width: 100%;
+  }
+}
