@@ -393,14 +393,36 @@ function Digitise() {
     livePeerRef.current = peer;
 
     peer.ontrack = (event) => {
+      console.log("🔥🔥🔥 LAPTOP RECEIVED PHONE VIDEO TRACK", event);
+
       const [remoteStream] = event.streams;
 
-      if (videoRef.current && remoteStream) {
-        videoRef.current.srcObject = remoteStream;
-        videoRef.current.play().catch(() => {});
+      console.log("🔥 REMOTE STREAM:", remoteStream);
+
+      if (remoteStream) {
+        setLiveRemoteConnected(true);
+
+        setTimeout(() => {
+          if (videoRef.current) {
+            console.log("🔥 ATTACHING REMOTE STREAM TO VIDEO");
+
+            videoRef.current.srcObject = remoteStream;
+            videoRef.current.muted = true;
+            videoRef.current.play()
+              .then(() => {
+                console.log("🔥🔥🔥 VIDEO PLAYING SUCCESSFULLY");
+              })
+              .catch((error) => {
+                console.error("❌ VIDEO PLAY ERROR:", error);
+              });
+          } else {
+            console.error("❌ VIDEO ELEMENT STILL NOT FOUND");
+          }
+        }, 100);
       }
 
       setLiveRemoteConnected(true);
+
       setLiveConnectionStatus(
         "Phone camera connected — live stream active."
       );
@@ -421,6 +443,10 @@ function Digitise() {
     };
 
     peer.onconnectionstatechange = () => {
+      console.log(
+        "🔥 WEBRTC CONNECTION STATE:",
+        peer.connectionState
+      );
       const state = peer.connectionState;
 
       if (state === "connected") {
@@ -443,6 +469,7 @@ function Digitise() {
 
   const handleLiveSignalingMessage = async (message) => {
     if (message.type === "peer_joined") {
+      console.log("🔥 LAPTOP RECEIVED PEER_JOINED", message);
       setLiveConnectionStatus(
         "Phone connected. Establishing the live camera stream..."
       );
@@ -450,6 +477,7 @@ function Digitise() {
     }
 
     if (message.type === "offer") {
+      console.log("🔥 LAPTOP RECEIVED PHONE OFFER", message);
       try {
         const peer = await createLiveHostPeer();
 
@@ -576,10 +604,13 @@ function Digitise() {
       liveSocketRef.current = socket;
 
       socket.onopen = () => {
+        console.log("🔥 LAPTOP LIVE WEBSOCKET CONNECTED");
         setLiveConnectionStatus(
           "Session ready. Open the phone camera link to connect."
         );
       };
+
+
 
       socket.onmessage = async (event) => {
         try {
@@ -590,7 +621,8 @@ function Digitise() {
         }
       };
 
-      socket.onerror = () => {
+      socket.onerror = (error) => {
+        console.error("🔥 LAPTOP LIVE WEBSOCKET ERROR:", error);
         setLiveConnectionStatus(
           "Unable to connect to the live-camera signaling service."
         );
