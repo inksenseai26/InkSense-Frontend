@@ -28,7 +28,7 @@ import "./DocumentViewer.css";
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  "http://inksense-backend-ifpd.onrender.com";
+  "https://inksense-backend-ifpd.onrender.com";
 
 
 function DocumentViewer() {

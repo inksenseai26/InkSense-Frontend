@@ -26,7 +26,7 @@ function App() {
 
   useEffect(() => {
     fetch(
-      "http://inksense-backend-ifpd.onrender.com/api/test"
+      "https://inksense-backend-ifpd.onrender.com/api/test"
     )
       .then((response) =>
         response.json()
