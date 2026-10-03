@@ -8,6 +8,8 @@ import {
   LogOut,
 } from "lucide-react";
 
+import logo from "../image/Inksense_logo.png";
+
 import {
   NavLink,
   useNavigate,
@@ -66,8 +68,11 @@ function Navbar() {
           }}
         >
 
-          <div className="logo-icon">
-            <PenTool size={18} />
+         <div className="logo-icon">
+            <img
+              src={logo}
+              alt="InkSense AI"
+            />
           </div>
 
           <h2>
