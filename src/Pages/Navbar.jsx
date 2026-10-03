@@ -8,7 +8,7 @@ import {
   LogOut,
 } from "lucide-react";
 
-import logo from "../image/Inksense_logo.png";
+import logo from "../image/inksense-logo.png";
 
 import {
   NavLink,
