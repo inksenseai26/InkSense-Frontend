@@ -1344,3 +1344,216 @@
     width: 100%;
   }
 }
+
+
+/* =========================================================
+   LIVE CAMERA — TWO COLUMN CAPTURE LAYOUT
+   ========================================================= */
+
+.live-camera-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+.live-camera-left-column {
+  min-width: 0;
+}
+
+.live-camera-right-column {
+  min-width: 0;
+}
+
+/* =========================================================
+   LEFT CAMERA
+   ========================================================= */
+
+.live-camera-left-column .live-camera-preview {
+  width: 100%;
+  height: 456px;
+  margin: 0;
+}
+
+/* Status below camera */
+
+.live-camera-left-column .live-camera-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 145px;
+  min-height: 24px;
+  text-align: center;
+}
+
+/* Stop button below left camera */
+
+.live-camera-left-column .live-stop-btn {
+  display: block;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   RIGHT CAPTURE CARD
+   ========================================================= */
+
+.live-camera-right-column .live-capture-result {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 16px 14px 14px;
+  background: #ffffff;
+  border: 1px solid #dfe5eb;
+  border-radius: 16px;
+}
+
+.live-camera-right-column
+.live-capture-result-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.live-camera-right-column
+.live-capture-result-header h3 {
+  margin: 4px 0 0;
+}
+
+.live-camera-right-column
+.live-capture-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 456px;
+  overflow: hidden;
+  border: 1px solid #dfe5eb;
+  border-radius: 10px;
+  background: #f5f7fa;
+}
+
+.live-camera-right-column
+.live-capture-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* =========================================================
+   EMPTY CAPTURE STATE
+   ========================================================= */
+
+.live-capture-empty-state {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #8996a3;
+  text-align: center;
+}
+
+.live-capture-empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* =========================================================
+   CAPTURE AGAIN BUTTON
+   ========================================================= */
+
+.live-review-capture-again {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  padding: 5px 9px;
+
+  border: none;
+  border-radius: 2px;
+
+  background: #5d5d5d;
+  color: #ffffff;
+
+  font-size: 12px;
+  line-height: 1.2;
+
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.live-review-capture-again:hover {
+  background: #4b4b4b;
+}
+
+/* =========================================================
+   REVIEW MESSAGE
+   ========================================================= */
+
+.live-camera-right-column
+.live-review-message {
+  margin: 28px 0 0;
+  text-align: center;
+  color: #111111;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   PEN CAPTURE INSTRUCTION
+   ========================================================= */
+
+.live-camera-right-column
+.live-camera-tip {
+  margin: 0;
+  padding: 0 12px;
+  text-align: center;
+  color: #111111;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .live-camera-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .live-camera-left-column
+  .live-camera-info {
+    margin-top: 18px;
+  }
+
+  .live-camera-right-column {
+    margin-top: 10px;
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .live-camera-left-column
+  .live-camera-preview,
+  .live-camera-right-column
+  .live-capture-image-wrapper {
+    height: 360px;
+  }
+
+}

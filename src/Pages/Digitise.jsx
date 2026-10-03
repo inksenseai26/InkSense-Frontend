@@ -2512,30 +2512,53 @@ function Digitise() {
 
           {liveSessionId && (
             <div className="live-session-panel">
+
               <div className="live-session-panel-main">
-                <p className="live-session-label">PHONE CAMERA SESSION</p>
-                <h3>Connect your phone as the camera</h3>
+
+                <p className="live-session-label">
+                  PHONE CAMERA SESSION
+                </p>
+
+                <h3>
+                  Connect your phone as the camera
+                </h3>
+
                 <p>
-                  Open the link below on your phone. Keep this laptop page open.
+                  Open the link below on your phone.
+                  Keep this laptop page open.
                 </p>
 
                 <div className="live-session-code">
-                  <span>Session Code</span>
-                  <strong>{liveJoinCode}</strong>
+
+                  <span>
+                    Session Code
+                  </span>
+
+                  <strong>
+                    {liveJoinCode}
+                  </strong>
+
                 </div>
 
                 <div className="live-session-link-row">
+
                   <input
                     type="text"
                     value={livePhoneUrl}
                     readOnly
-                    onFocus={(event) => event.target.select()}
+                    onFocus={(event) =>
+                      event.target.select()
+                    }
                   />
+
                   <button
                     type="button"
                     onClick={async () => {
                       try {
-                        await navigator.clipboard.writeText(livePhoneUrl);
+                        await navigator.clipboard.writeText(
+                          livePhoneUrl
+                        );
+
                         setLiveConnectionStatus(
                           "Phone camera link copied. Open it on your phone."
                         );
@@ -2548,6 +2571,7 @@ function Digitise() {
                   >
                     Copy Link
                   </button>
+
                 </div>
 
                 <a
@@ -2558,126 +2582,222 @@ function Digitise() {
                 >
                   Open Phone Camera Page
                 </a>
+
               </div>
+
             </div>
           )}
 
           {/* =================================================
-              Live camera preview
+              LIVE CAMERA + LATEST CAPTURE
           ================================================= */}
 
-          <div className="live-camera-preview">
+          <div className="live-camera-workspace">
 
-            {liveRemoteConnected ? (
-              <>
+            {/* =================================================
+                LEFT — LIVE CAMERA
+            ================================================= */}
 
-                <video
-                  ref={videoRef}
-                  className="live-camera-video"
-                  autoPlay
-                  playsInline
-                  muted
-                />
+            <div className="live-camera-left-column">
 
-                {/* ===========================================
-                    FIXED CAPTURE ZONE
-                =========================================== */}
+              <div className="live-camera-preview">
 
-                {!isLiveReviewing && (
-                  <div className="fixed-capture-zone">
+                {liveRemoteConnected ? (
+                  <>
 
-                    <div className="fixed-capture-zone-inner">
+                    <video
+                      ref={videoRef}
+                      className="live-camera-video"
+                      autoPlay
+                      playsInline
+                      muted
+                    />
 
-                      <span>
-                        CAPTURE ZONE
-                      </span>
+                    {/* ===========================================
+                        FIXED CAPTURE ZONE
+                    =========================================== */}
 
-                    </div>
+                    {!isLiveReviewing && (
+                      <div className="fixed-capture-zone">
+
+                        <div className="fixed-capture-zone-inner">
+
+                          <span>
+                            CAPTURE ZONE
+                          </span>
+
+                        </div>
+
+                      </div>
+                    )}
+
+                  </>
+                ) : (
+                  <div className="live-camera-placeholder">
+
+                    <Camera size={32} />
+
+                    <h3>
+                      Waiting for phone camera
+                    </h3>
+
+                    <p>
+                      Open the phone camera link above
+                      to start the live stream.
+                    </p>
 
                   </div>
                 )}
 
-              </>
-            ) : (
-              <div className="live-camera-placeholder">
-
-                <Camera size={32} />
-
-                <h3>
-                  Waiting for phone camera
-                </h3>
-
-                <p>
-                  Open the phone camera link above to start the live stream.
-                </p>
-
               </div>
-            )}
 
-          </div>
+              {/* =================================================
+                  LEFT STATUS
+              ================================================= */}
 
-          {/* =================================================
-              Latest captured image
-          ================================================= */}
+              <div className="live-camera-info">
 
-          {liveCapturedImage && (
-            <div className="live-capture-result">
+                <span className="live-status-dot"></span>
 
-              <div className="live-capture-result-header">
-
-                <div>
-
-                  <p className="live-capture-label">
-                    LATEST CAPTURE
-                  </p>
-
-                  <h3>
-                    Captured Handwriting
-                  </h3>
-
-                </div>
-
-                <span className="capture-success-badge">
-                  Captured
+                <span>
+                  {liveRemoteConnected
+                    ? tapDetectionStatus
+                    : liveConnectionStatus}
                 </span>
 
               </div>
 
-              <div className="live-capture-image-wrapper">
+              {/* =================================================
+                  STOP LIVE CAMERA
+              ================================================= */}
 
-                <img
-                  src={liveCapturedImage}
-                  alt="Latest captured handwriting"
-                  className="live-capture-image"
-                />
+              <button
+                type="button"
+                className="live-stop-btn"
+                onClick={() => {
 
-              </div>
+                  stopDoubleTapDetection();
 
-              <div className="live-review-actions">
+                  stopLiveSession();
 
-                <button
-                  type="button"
-                  onClick={
-                    handleLiveCaptureAgain
-                  }
-                  className="secondary-button"
-                >
-                  <RefreshCcw size={18} />
-                  Capture Again
-                </button>
+                  setLiveCameraMode(false);
 
-                <p className="live-review-message">
-                  Automatic capture is paused
-                  while you review this image.
-                </p>
+                  setLiveCapturedImage(null);
 
-              </div>
+                  setTapCount(0);
+
+                  setTapDetectionStatus(
+                    "Live camera stopped."
+                  );
+
+                }}
+              >
+                Stop Live Camera
+              </button>
 
             </div>
-          )}
+
+            {/* =================================================
+                RIGHT — LATEST CAPTURE
+            ================================================= */}
+
+            <div className="live-camera-right-column">
+
+              <div className="live-capture-result">
+
+                <div className="live-capture-result-header">
+
+                  <div>
+
+                    <p className="live-capture-label">
+                      LATEST CAPTURE
+                    </p>
+
+                    <h3>
+                      Captured Handwriting
+                    </h3>
+
+                  </div>
+
+                  {liveCapturedImage && (
+                    <span className="capture-success-badge">
+                      Captured
+                    </span>
+                  )}
+
+                </div>
+
+                <div className="live-capture-image-wrapper">
+
+                  {liveCapturedImage ? (
+
+                    <img
+                      src={liveCapturedImage}
+                      alt="Latest captured handwriting"
+                      className="live-capture-image"
+                    />
+
+                  ) : (
+
+                    <div className="live-capture-empty-state">
+
+                      <Camera size={28} />
+
+                      <p>
+                        Your latest captured image
+                        will appear here.
+                      </p>
+
+                    </div>
+
+                  )}
+
+                  {liveCapturedImage && (
+                    <button
+                      type="button"
+                      onClick={handleLiveCaptureAgain}
+                      className="live-review-capture-again"
+                    >
+                      <RefreshCcw size={15} />
+                      Capture Again
+                    </button>
+                  )}
+
+                </div>
+
+                {liveCapturedImage && (
+                  <p className="live-review-message">
+                    Automatic capture is paused while
+                    you review this image.
+                  </p>
+                )}
+
+              </div>
+
+              {/* =================================================
+                  PEN CAPTURE INSTRUCTION
+              ================================================= */}
+
+              <p className="live-camera-tip">
+
+                <strong>
+                  Pen capture:
+                </strong>{" "}
+
+                Once the phone camera is connected,
+                keep the pen inside the highlighted
+                capture zone and make two quick short
+                movements. Movements outside the zone
+                are ignored.
+
+              </p>
+
+            </div>
+
+          </div>
 
           {/* =================================================
-              Camera error
+              CAMERA ERROR
           ================================================= */}
 
           {cameraError && (
@@ -2691,68 +2811,6 @@ function Digitise() {
 
             </div>
           )}
-
-          {/* =================================================
-              Live Camera Controls
-          ================================================= */}
-
-          <div className="live-camera-controls">
-
-            <div className="live-camera-info">
-
-              <span className="live-status-dot"></span>
-
-              <span>
-                {liveRemoteConnected
-                  ? tapDetectionStatus
-                  : liveConnectionStatus}
-              </span>
-
-            </div>
-
-            <button
-              type="button"
-              className="live-stop-btn"
-              onClick={() => {
-
-                stopDoubleTapDetection();
-
-                stopLiveSession();
-
-                setLiveCameraMode(false);
-
-                setLiveCapturedImage(
-                  null
-                );
-
-                setTapCount(0);
-
-                setTapDetectionStatus(
-                  "Live camera stopped."
-                );
-
-              }}
-            >
-              Stop Live Camera
-            </button>
-
-          </div>
-
-          {/* =================================================
-              Fixed capture instruction
-          ================================================= */}
-
-          <p className="live-camera-tip">
-
-            <strong>
-              Pen capture:
-            </strong>{" "}
-            Once the phone camera is connected, keep
-            the pen inside the highlighted capture
-            zone and make two quick short movements.
-            Movements outside the zone are ignored.
-
-          </p>
 
         </div>
       )}

@@ -417,81 +417,83 @@ function LiveCameraPhone() {
     start();
 
     return () => {
-      cleanup();
-    };
-  }, [sessionId, code]);
+        cleanup();
+      };
+    }, [sessionId, code]);
 
-  return (
+    return (
     <main className="live-phone-page">
-      <section className="live-phone-card">
+      <video
+        ref={videoRef}
+        className="live-phone-fullscreen-video"
+        autoPlay
+        playsInline
+        muted
+      />
 
-        <div className="live-phone-brand">
-          <Smartphone size={22} />
-          <span>InkSense AI</span>
+      {!cameraReady && (
+        <div className="live-phone-loading">
+          <Camera size={28} />
+          <span>Starting camera...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="live-phone-error-overlay">
+          <span>{error}</span>
+        </div>
+      )}
+
+      <div className="live-phone-overlay">
+        <div className="live-phone-top-bar">
+          <div className="live-phone-brand">
+            <Smartphone size={20} />
+            <span>InkSense AI</span>
+          </div>
+
+          <div className="live-phone-live-indicator">
+            <span></span>
+            LIVE
+          </div>
         </div>
 
-        <div className="live-phone-icon">
-          <Camera size={30} />
+        <div className="live-phone-bottom-bar">
+          <div className="live-phone-status">
+            {!error && (
+              <>
+                <CheckCircle2 size={17} />
+                <span>{status}</span>
+              </>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="live-phone-capture-again"
+            onClick={() => {
+              if (
+                socketRef.current &&
+                socketRef.current.readyState === WebSocket.OPEN
+              ) {
+                socketRef.current.send(
+                  JSON.stringify({
+                    type: "capture_again",
+                  })
+                );
+
+                setStatus("Capture requested...");
+              }
+            }}
+          >
+            <RefreshCcw size={19} />
+            Capture Again
+          </button>
+
+          <div className="live-phone-session">
+            Session: <strong>{code || "------"}</strong>
+          </div>
         </div>
-
-        <h1>Phone Camera</h1>
-
-        <p className="live-phone-description">
-          Keep this page open. Your phone camera is being
-          used as the live camera for the InkSense laptop
-          dashboard.
-        </p>
-
-        <div className="live-phone-preview">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-          />
-
-          {!cameraReady && (
-            <div className="live-phone-preview-overlay">
-              <Camera size={28} />
-              <span>
-                Starting camera...
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div className="live-phone-status">
-          {error ? (
-            <span className="live-phone-error">
-              {error}
-            </span>
-          ) : (
-            <>
-              <CheckCircle2 size={18} />
-              <span>{status}</span>
-            </>
-          )}
-        </div>
-
-        <p className="live-phone-code">
-          Session:{" "}
-          <strong>
-            {code || "------"}
-          </strong>
-        </p>
-
-        <button
-          type="button"
-          className="live-phone-refresh"
-          onClick={() =>
-            window.location.reload()
-          }
-        >
-          <RefreshCcw size={17} />
-          Restart Camera
-        </button>
-
-      </section>
+      </div>
     </main>
   );
 }
